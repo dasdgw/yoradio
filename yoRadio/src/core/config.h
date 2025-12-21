@@ -103,6 +103,7 @@ struct config_t
   bool      dspon;
   uint8_t   brightness;
   uint8_t   contrast;
+  char      timezone_posix[35];
   char      sntp1[35];
   char      sntp2[35];
   bool      showweather;

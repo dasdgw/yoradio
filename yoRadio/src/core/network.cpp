@@ -204,10 +204,14 @@ void YoNetwork::setWifiParams(){
     weatherBuf = (char *) malloc(sizeof(char) * WEATHER_STRING_L);
     memset(weatherBuf, 0, WEATHER_STRING_L);
   #endif
-  if(strlen(config.store.sntp1)>0 && strlen(config.store.sntp2)>0){
-    configTime(config.store.tzHour * 3600 + config.store.tzMin * 60, config.getTimezoneOffset(), config.store.sntp1, config.store.sntp2);
-  }else if(strlen(config.store.sntp1)>0){
-    configTime(config.store.tzHour * 3600 + config.store.tzMin * 60, config.getTimezoneOffset(), config.store.sntp1);
+  if(strlen(config.store.sntp1)>0 && strlen(config.store.sntp2)>0 && strlen(config.store.timezone_posix)>0){
+    configTime(0, 0, config.store.sntp1, config.store.sntp2);
+    setenv("TZ",config.store.timezone_posix,1);  //  Now adjust the TZ.  Clock settings are adjusted to show the new local time
+    tzset();
+  }else if(strlen(config.store.sntp1)>0 && strlen(config.store.timezone_posix)>0){
+    configTime(0, 0, config.store.sntp1, config.store.sntp2);
+    setenv("TZ",config.store.timezone_posix,1);  //  Now adjust the TZ.  Clock settings are adjusted to show the new local time
+    tzset();
   }
 }
 

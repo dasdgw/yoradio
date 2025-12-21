@@ -447,11 +447,12 @@ void Config::setDefaults() {
   store.dspon=true;
   store.brightness=100;
   store.contrast=55;
+  strlcpy(store.timezone_posix,"CET-1CEST,M3.5.0,M10.5.0/3", 35);
   strlcpy(store.sntp1,"pool.ntp.org", 35);
-  strlcpy(store.sntp2,"1.ru.pool.ntp.org", 35);
+  strlcpy(store.sntp2,"0.de.pool.ntp.org", 35);
   store.showweather=false;
-  strlcpy(store.weatherlat,"55.7512", 10);
-  strlcpy(store.weatherlon,"37.6184", 10);
+  strlcpy(store.weatherlat,"48.694333", 10);
+  strlcpy(store.weatherlon,"9.418985", 10);
   strlcpy(store.weatherkey,"", 64);
   store.volsteps = 1;
   store.encacc = 200;

@@ -279,7 +279,7 @@ void NetServer::processQueue(){
       case GETINDEX:      requestOnChange(STATION, clientId); requestOnChange(TITLE, clientId); requestOnChange(VOLUME, clientId); requestOnChange(EQUALIZER, clientId); requestOnChange(BALANCE, clientId); requestOnChange(BITRATE, clientId); requestOnChange(MODE, clientId); requestOnChange(SDINIT, clientId);requestOnChange(GETPLAYERMODE, clientId); if (config.getMode()==PM_SDCARD) { requestOnChange(SDPOS, clientId); requestOnChange(SDLEN, clientId); requestOnChange(SDSNUFFLE, clientId); } return; break;
       case GETSYSTEM:     sprintf (wsbuf, "{\"sst\":%d,\"aif\":%d,\"vu\":%d,\"softr\":%d}", config.store.smartstart != 2, config.store.audioinfo, config.store.vumeter, config.store.softapdelay); break;
       case GETSCREEN:     sprintf (wsbuf, "{\"flip\":%d,\"inv\":%d,\"nump\":%d,\"tsf\":%d,\"tsd\":%d,\"dspon\":%d,\"br\":%d,\"con\":%d}", config.store.flipscreen, config.store.invertdisplay, config.store.numplaylist, config.store.fliptouch, config.store.dbgtouch, config.store.dspon, config.store.brightness, config.store.contrast); break;
-      case GETTIMEZONE:   sprintf (wsbuf, "{\"tzh\":%d,\"tzm\":%d,\"sntp1\":\"%s\",\"sntp2\":\"%s\"}", config.store.tzHour, config.store.tzMin, config.store.sntp1, config.store.sntp2); break;
+      case GETTIMEZONE:   sprintf (wsbuf, "{\"timezone_posix\":\"%s\",\"sntp1\":\"%s\",\"sntp2\":\"%s\"}", config.store.timezone_posix, config.store.sntp1, config.store.sntp2); break;
       case GETWEATHER:    sprintf (wsbuf, "{\"wen\":%d,\"wlat\":\"%s\",\"wlon\":\"%s\"}", config.store.showweather, config.store.weatherlat, config.store.weatherlon); break;
       case GETCONTROLS:   sprintf (wsbuf, "{\"vols\":%d,\"enca\":%d,\"irtl\":%d}", config.store.volsteps, config.store.encacc, config.store.irtlp); break;
       case DSPON:         sprintf (wsbuf, "{\"dspontrue\":%d}", 1); break;
@@ -454,18 +454,25 @@ void NetServer::onWsMessage(void *arg, uint8_t *data, size_t len, uint8_t client
         strlcpy(config.store.sntp2, val, 35);
         return;
       }
+      if (strcmp(cmd, "timezone_posix") == 0) {
+        strlcpy(config.store.timezone_posix, val, 35);
+        return;
+      }
       if (strcmp(cmd, "sntp1") == 0) {
         strlcpy(config.store.sntp1, val, 35);
         bool tzdone = false;
-        if (strlen(config.store.sntp1) > 0 && strlen(config.store.sntp2) > 0) {
-          configTime(config.store.tzHour * 3600 + config.store.tzMin * 60, config.getTimezoneOffset(), config.store.sntp1, config.store.sntp2);
+        if(strlen(config.store.sntp1)>0 && strlen(config.store.sntp2)>0 && strlen(config.store.timezone_posix)>0){
+          configTime(0, 0, config.store.sntp1, config.store.sntp2);
+          setenv("TZ",config.store.timezone_posix,1);  //  Now adjust the TZ.  Clock settings are adjusted to show the new local time
           tzdone = true;
-        } else if (strlen(config.store.sntp1) > 0) {
-          configTime(config.store.tzHour * 3600 + config.store.tzMin * 60, config.getTimezoneOffset(), config.store.sntp1);
+        }else if(strlen(config.store.sntp1)>0 && strlen(config.store.timezone_posix)>0){
+          configTime(0, 0, config.store.sntp1, config.store.sntp2);
+          setenv("TZ",config.store.timezone_posix,1);  //  Now adjust the TZ.  Clock settings are adjusted to show the new local time
           tzdone = true;
         }
         if (tzdone) {
           //network.requestTimeSync(true);
+          tzset();
           network.forceTimeSync = true;
           config.save();
         }
@@ -539,18 +546,21 @@ void NetServer::onWsMessage(void *arg, uint8_t *data, size_t len, uint8_t client
         if (strcmp(val, "timezone") == 0) {
           config.store.tzHour = 3;
           config.store.tzMin = 0;
+	  strlcpy(config.store.timezone_posix,"CET-1CEST,M3.5.0,M10.5.0/3", 35);
           strlcpy(config.store.sntp1, "pool.ntp.org", 35);
-          strlcpy(config.store.sntp2, "0.ru.pool.ntp.org", 35);
+          strlcpy(config.store.sntp2, "0.de.pool.ntp.org", 35);
           config.save();
-          configTime(config.store.tzHour * 3600 + config.store.tzMin * 60, config.getTimezoneOffset(), config.store.sntp1, config.store.sntp2);
+	  configTime(0, 0, config.store.sntp1, config.store.sntp2);
+	  setenv("TZ",config.store.timezone_posix,1);
+	  tzset();
           network.forceTimeSync = true;
           requestOnChange(GETTIMEZONE, clientId);
           return;
         }
         if (strcmp(val, "weather") == 0) {
           config.store.showweather = 0;
-          strlcpy(config.store.weatherlat, "55.7512", 10);
-          strlcpy(config.store.weatherlon, "37.6184", 10);
+          strlcpy(config.store.weatherlat, "48.694333", 10);
+          strlcpy(config.store.weatherlon, "9.418985", 10);
           config.save();
           network.trueWeather=false;
           display.putRequest(NEWMODE, CLEAR); display.putRequest(NEWMODE, PLAYER);
