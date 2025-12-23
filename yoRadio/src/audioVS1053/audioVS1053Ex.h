@@ -17,6 +17,7 @@
 #define VS1053VOL(v) (VS1053VOLM==128?log10(((float)v+1)) * 50.54571334 + 128:log10(((float)v+1)) * 64.54571334 + 96)
 
 
+#include "hal/gpio_ll.h"
 #include "Arduino.h"
 #include <vector>
 #include "libb64/cencode.h"
