@@ -820,9 +820,9 @@ void handleHTTPArgs(AsyncWebServerRequest * request) {
     if (request->hasArg("volp")) { player.stepVol(true); commandFound=true; }
 
     if (request->hasArg("trebble") && request->hasArg("middle") && request->hasArg("bass")) {
-      AsyncWebParameter* pt = request->getParam("trebble", request->method() == HTTP_POST);
-      AsyncWebParameter* pm = request->getParam("middle", request->method() == HTTP_POST);
-      AsyncWebParameter* pb = request->getParam("bass", request->method() == HTTP_POST);
+      const AsyncWebParameter* pt = request->getParam("trebble", request->method() == HTTP_POST);
+      const AsyncWebParameter* pm = request->getParam("middle", request->method() == HTTP_POST);
+      const AsyncWebParameter* pb = request->getParam("bass", request->method() == HTTP_POST);
       int t = atoi(pt->value().c_str());
       int m = atoi(pm->value().c_str());
       int b = atoi(pb->value().c_str());
@@ -832,7 +832,7 @@ void handleHTTPArgs(AsyncWebServerRequest * request) {
       commandFound=true;
     }
     if (request->hasArg("ballance")) {
-      AsyncWebParameter* p = request->getParam("ballance", request->method() == HTTP_POST);
+      const AsyncWebParameter* p = request->getParam("ballance", request->method() == HTTP_POST);
       int b = atoi(p->value().c_str());
       player.setBalance(b);
       config.setBalance(b);
@@ -840,7 +840,7 @@ void handleHTTPArgs(AsyncWebServerRequest * request) {
       commandFound=true;
     }
     if (request->hasArg("playstation") || request->hasArg("play")) {
-      AsyncWebParameter* p = request->getParam(request->hasArg("playstation") ? "playstation" : "play", request->method() == HTTP_POST);
+      const AsyncWebParameter* p = request->getParam(request->hasArg("playstation") ? "playstation" : "play", request->method() == HTTP_POST);
       int id = atoi(p->value().c_str());
       if (id < 1) id = 1;
       if (id > config.store.countStation) id = config.store.countStation;
@@ -850,7 +850,7 @@ void handleHTTPArgs(AsyncWebServerRequest * request) {
       DBGVB("[%s] play=%d", __func__, id);
     }
     if (request->hasArg("vol")) {
-      AsyncWebParameter* p = request->getParam("vol", request->method() == HTTP_POST);
+      const AsyncWebParameter* p = request->getParam("vol", request->method() == HTTP_POST);
       int v = atoi(p->value().c_str());
       if (v < 0) v = 0;
       if (v > 254) v = 254;
@@ -860,13 +860,13 @@ void handleHTTPArgs(AsyncWebServerRequest * request) {
       DBGVB("[%s] vol=%d", __func__, v);
     }
     if (request->hasArg("dspon")) {
-      AsyncWebParameter* p = request->getParam("dspon", request->method() == HTTP_POST);
+      const AsyncWebParameter* p = request->getParam("dspon", request->method() == HTTP_POST);
       int d = atoi(p->value().c_str());
       config.setDspOn(d!=0);
       commandFound=true;
     }
     if (request->hasArg("dim")) {
-      AsyncWebParameter* p = request->getParam("dim", request->method() == HTTP_POST);
+      const AsyncWebParameter* p = request->getParam("dim", request->method() == HTTP_POST);
       int d = atoi(p->value().c_str());
       if (d < 0) d = 0;
       if (d > 100) d = 100;
@@ -875,11 +875,11 @@ void handleHTTPArgs(AsyncWebServerRequest * request) {
       commandFound=true;
     }
     if (request->hasArg("sleep")) {
-      AsyncWebParameter* sfor = request->getParam("sleep", request->method() == HTTP_POST);
+      const AsyncWebParameter* sfor = request->getParam("sleep", request->method() == HTTP_POST);
       int sford = atoi(sfor->value().c_str());
       int safterd = 0;
       if(request->hasArg("after")){
-        AsyncWebParameter* safter = request->getParam("after", request->method() == HTTP_POST);
+        const AsyncWebParameter* safter = request->getParam("after", request->method() == HTTP_POST);
         safterd = atoi(safter->value().c_str());
       }
       if(sford > 0 && safterd >= 0){
